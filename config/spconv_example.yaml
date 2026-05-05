@@ -1,0 +1,47 @@
+name: spconv_unet
+dataset_name: paris_lille_3d
+save_dir: results/spconv_unet_sphere_12_paris_lille_3d
+dataset_config:
+  loops: 1
+  voxel_size: 0.1
+  voxel_size_preprocessing: 0.05
+  grid_overlay: 5
+  train_dir: /data/train/
+  val_dir: /data/val/
+  apply_transforms: True
+  lambda_p: 12 # either prob for exponent or range value in meter for radius or box dim
+  use_lambda_range: False
+  lambda_range: # lambda uniform range between lambda - [0], lambda + [1]
+    - 0.4
+    - 0.4
+  ending: .ply
+  sub_cloud_method: sphere
+  min_appearance: 1.2
+  min_pts: 500
+  feat_list:
+    - disc_coords
+train:
+  bs: 4
+  accumulation_steps: 4
+  max_lr:
+    - 0.01
+  mom: 0.9
+  wd: 0.0001
+  ep: 800
+  gamma: 0.98
+  clip_gradient: 3
+  nr_workers: 4
+loss:
+  name: cross_entropy
+  label_smoothing: 0.05
+  weight: null
+  ignore_index: -1
+  weight_factor: 1.0
+model_config:
+  in_channels: 3
+  nr_classes: 9
+  enc_channels:
+    - 32
+    - 64
+    - 128
+    - 256

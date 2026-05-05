@@ -1,0 +1,112 @@
+name: point_transformer_v3
+dataset_name: paris_lille_3d
+save_dir: results/ptv3_sphere_16_paris_lille_3d
+dataset_config:
+  loops: 1
+  voxel_size: 0.1
+  voxel_size_preprocessing: 0.05
+  grid_overlay: 5
+  train_dir: /data/train/
+  val_dir: /data/val/
+  apply_transforms: True
+  grid_overlay: 8
+  lambda_p: 16 # either prob for exponent, std for distance in m or range value in meter for radius or box dim
+  use_lambda_range: False
+  lambda_range: # lambda uniform range between lambda - [0], lambda + [1]
+    - 0.4
+    - 0.4
+  ending: .ply
+  sub_cloud_method: sphere
+  min_appearance: 1.2
+  min_pts: 500
+  feat_list:
+    - disc_coords
+train:
+  bs: 4
+  accumulation_steps: 4
+  max_lr:
+    - 0.006
+    - 0.0006
+  opti_group:
+    - "block"
+  mom: 0.9
+  wd: 0.05
+  ep: 200
+  gamma: 0.98
+  clip_gradient: 3
+  nr_workers: 4
+loss:
+  name: cross_entropy
+  label_smoothing: 0.05
+  weight: null
+  ignore_index: -1
+  weight_factor: 1.0
+model_config:
+  in_channels: 3
+  nr_classes: 10
+  order:
+    - z
+    - z-trans
+    - hilbert
+    - hilbert-trans
+  enc_channels:
+    - 32
+    - 64
+    - 128
+    - 256
+    - 512
+  enc_depth:
+    - 2
+    - 2
+    - 2
+    - 6
+    - 2
+  enc_num_heads:
+    - 2
+    - 4
+    - 8
+    - 16
+    - 32
+  enc_patch_size:
+    - 128
+    - 128
+    - 128
+    - 128
+    - 128
+  stride:
+    - 2
+    - 2
+    - 2
+    - 2
+  dec_channels:
+    - 64
+    - 64
+    - 128
+    - 256
+  dec_depth:
+    - 2
+    - 2
+    - 2
+    - 2
+  dec_num_heads:
+    - 4
+    - 4
+    - 8
+    - 16
+  dec_patch_size:
+    - 128
+    - 128
+    - 128
+    - 128
+  mlp_ratio: 4
+  qkv_bias: True
+  qk_scale: Null
+  attn_drop: 0.0
+  proj_drop: 0.0
+  drop_path: 0.3
+  pre_norm: True
+  shuffle_orders: True
+  enable_rpe: False
+  enable_flash: False
+  upcast_attention: False
+  upcast_softmax: False

@@ -1,0 +1,140 @@
+name: litept
+dataset_name: paris_lille_3d
+save_dir: results/litept_sphere_12_paris_lille_3d
+dataset_config:
+  loops: 1
+  voxel_size: 0.1
+  voxel_size_preprocessing: 0.05
+  grid_overlay: 5
+  train_dir: /data/train/
+  val_dir: /data/val/
+  apply_transforms: True
+  lambda_p: 12 # either prob for exponent, std for distance in m or range value in meter for radius or box dim
+  use_lambda_range: False
+  lambda_range: # lambda uniform range between lambda - [0], lambda + [1]
+    - 0.4
+    - 0.4
+  ending: .ply
+  sub_cloud_method: sphere
+  min_appearance: 1.2
+  min_pts: 500
+  feat_list:
+    - disc_coords
+train:
+  bs: 4
+  accumulation_steps: 4
+  max_lr:
+    - 0.006
+    - 0.0006
+  opti_group:
+    - "block"
+  mom: 0.9
+  wd: 0.05
+  ep: 100
+  gamma: 0.98
+  clip_gradient: 3
+  nr_workers: 4
+loss:
+  name: cross_entropy
+  label_smoothing: 0.05
+  weight: null
+  ignore_index: -1
+  weight_factor: 1.0
+model_config:
+  in_channels: 3
+  nr_classes: 10
+  order:
+    - z
+    - z-trans
+    - hilbert
+    - hilbert-trans
+  enc_channels:
+    - 36
+    - 72
+    - 144
+    - 252
+    - 504
+  enc_depth:
+    - 2
+    - 2
+    - 2
+    - 6
+    - 2
+  enc_num_heads:
+    - 2
+    - 4
+    - 8
+    - 14
+    - 28
+  enc_patch_size:
+    - 1024
+    - 1024
+    - 1024
+    - 1024
+    - 1024
+  enc_conv:
+    - True
+    - True
+    - True
+    - False
+    - False
+  enc_attn:
+    - False
+    - False
+    - False
+    - True
+    - True
+  enc_rope_freq:
+    - 100.0
+    - 100.0
+    - 100.0
+    - 100.0
+    - 100.0
+  stride:
+    - 2
+    - 2
+    - 2
+    - 2
+  dec_channels:
+    - 72
+    - 72
+    - 144
+    - 252
+  dec_depth:
+    - 0
+    - 0
+    - 0
+    - 0
+  dec_num_heads:
+    - 4
+    - 4
+    - 8
+    - 14
+  dec_patch_size:
+    - 1024
+    - 1024
+    - 1024
+    - 1024
+  dec_conv:
+    - False
+    - False
+    - False
+    - False
+  dec_attn:
+    - False
+    - False
+    - False
+    - False
+  dec_rope_freq:
+    - 100.0
+    - 100.0
+    - 100.0
+    - 100.0
+  mlp_ratio: 4
+  qkv_bias: True
+  qk_scale: Null
+  attn_drop: 0.0
+  proj_drop: 0.0
+  drop_path: 0.3
+  pre_norm: True
+  shuffle_orders: True

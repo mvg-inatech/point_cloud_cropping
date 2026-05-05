@@ -1,0 +1,98 @@
+name: point_transformer_v2
+dataset_name: paris_lille_3d
+save_dir: results/ptv2_exponential_05_paris_lille_3d
+dataset_config:
+  loops: 1
+  voxel_size: 0.1
+  voxel_size_preprocessing: 0.05
+  grid_overlay: 5
+  train_dir: renamed_dict
+  val_dir: /data/val/
+  apply_transforms: True
+  lambda_p: 0.5 # either prob for exponent or range value in meter for radius or box dim
+  use_lambda_range: False
+  lambda_range: # lambda uniform range between lambda - [0], lambda + [1]
+    - 0.4
+    - 0.4
+  ending: .ply
+  sub_cloud_method: exponential
+  min_appearance: 0.4
+  min_pts: 500
+  feat_list:
+    - disc_coords
+train:
+  bs: 4
+  accumulation_steps: 4
+  max_lr:
+    - 0.05
+  mom: 0.9
+  wd: 0.05
+  ep: 200
+  gamma: 0.98
+  clip_gradient: 3
+  nr_workers: 4
+loss:
+  name: cross_entropy
+  label_smoothing: 0.05
+  weight: null
+  ignore_index: -1
+  weight_factor: 1.0
+model_config:
+  in_channels: 3
+  nr_classes: 10
+  patch_embed_depth: 1
+  patch_embed_channels: 48
+  patch_embed_groups: 6
+  patch_embed_neighbours: 8
+  enc_depths:
+      - 2
+      - 2
+      - 6
+      - 2
+  enc_channels:
+      - 96
+      - 192
+      - 384
+      - 512
+  enc_groups:
+      - 12
+      - 24
+      - 48
+      - 64
+  enc_neighbours:
+      - 16
+      - 16
+      - 16
+      - 16
+  dec_depths:
+      - 1
+      - 1
+      - 1
+      - 1
+  dec_channels:
+      - 48
+      - 96
+      - 192
+      - 384
+  dec_groups:
+      - 6
+      - 12
+      - 24
+      - 48
+  dec_neighbours:
+      - 16
+      - 16
+      - 16
+      - 16
+  grid_sizes:
+      - 0.08
+      - 0.16
+      - 0.24
+      - 0.48
+  attn_qkv_bias: True
+  pe_multiplier: False
+  pe_bias: True
+  attn_drop_rate: 0.0
+  drop_path_rate: 0
+  enable_checkpoint: False
+  unpool_backend: "map"
