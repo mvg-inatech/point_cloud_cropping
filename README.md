@@ -35,6 +35,18 @@ pytest
 
 # Citation
 
+```
+@misc{kellner2026sphericalgaussiancomparativeanalysis,
+      title={From Spherical to Gaussian: A Comparative Analysis of Point Cloud Cropping Strategies in Large-Scale 3D Environments}, 
+      author={Maximilian Kellner and Dominik Merkle and Michael Brunklaus and Alexander Reiterer},
+      year={2026},
+      eprint={2605.02098},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2605.02098}, 
+}
+```
+
 # Acknowledgement
 
 We would like to thank all the contributors to [Pointcept](https://github.com/Pointcept/Pointcept) for their excellent work.
