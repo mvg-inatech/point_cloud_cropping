@@ -18,7 +18,6 @@ from dataset.augmentation import (
 )
 from dataset.utils import dict_from_idx, dict_to_torch
 
-
 ############################################################################
 # parsing stuff
 
@@ -62,6 +61,7 @@ class BaseDataset(torch.utils.data.Dataset):
         self.file_paths = parse_dir_for_x_file(root_dir, self.file_ending)
 
         self.pc_loader = get_pc_loader(dataset_config.class_name)
+        print(f"Using point cloud loader: {self.pc_loader.__name__}")
 
     def __len__(self):
         return len(self.file_paths) * self.loops
