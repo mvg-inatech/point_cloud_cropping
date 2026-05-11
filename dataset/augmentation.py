@@ -158,7 +158,7 @@ class ChromaticColorTranslation(object):
 
 class RandomColorDrop(object):
     """
-    Drop random colors
+    Drop random colors or intensity values from the point cloud
     """
 
     def __init__(self, drop_rate=0.1):
@@ -177,6 +177,18 @@ class RandomColorDrop(object):
                 replace=False,
             )
             data_dict["colors"][colors_to_drop] *= 0
+        if "intensity" in data_dict.keys():
+            num_intensity = len(data_dict["intensity"])
+            drop_count = int(num_intensity * self.drop_rate)
+            if drop_count <= 0 or num_intensity == 0:
+                return data_dict
+            drop_count = min(num_intensity, drop_count)
+            intensity_to_drop = np.random.choice(
+                num_intensity,
+                size=drop_count,
+                replace=False,
+            )
+            data_dict["intensity"][intensity_to_drop] *= 0
         return data_dict
 
 
