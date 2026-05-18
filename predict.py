@@ -18,7 +18,7 @@ def parse_arguments(parser):
     parser.add_argument(
         "config_dir", type=str, help="dir to config file and model weights"
     )
-    parser.add_argument("file_dir", type=str, help="dir to single file")
+    parser.add_argument("file_dir", type=str, help="dir to files")
     parser.add_argument("output_dir", type=str, help="dir to save predictions")
     parser.add_argument(
         "--format",
