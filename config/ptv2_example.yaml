@@ -24,7 +24,7 @@ train:
   bs: 4
   accumulation_steps: 4
   max_lr:
-    - 0.05
+    - 0.005
   mom: 0.9
   wd: 0.05
   ep: 200

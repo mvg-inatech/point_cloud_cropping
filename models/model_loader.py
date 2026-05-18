@@ -4,6 +4,7 @@ from models.litept import LitePT
 from models.sonata import Sonata
 from models.spconv_unet import SpConvUNet
 from models.oacnns import OACNNs
+from models.kp_next import KPNeXt
 from common.parser import yaml_cfg_to_class
 from prettytable import PrettyTable
 
@@ -41,6 +42,8 @@ def get_model(name, config_dir, verbose=False):
         model = Sonata(config)
     elif name == "litept":
         model = LitePT(config)
+    elif name == "kp_next":
+        model = KPNeXt(config)
     else:
         raise NotImplementedError
     print("Model: {} ".format(name))
