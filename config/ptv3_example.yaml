@@ -2,6 +2,7 @@ name: point_transformer_v3
 dataset_name: paris_lille_3d
 save_dir: results/ptv3_sphere_16_paris_lille_3d
 dataset_config:
+  dataset_type: large_scale
   loops: 1
   voxel_size: 0.1
   voxel_size_preprocessing: 0.05

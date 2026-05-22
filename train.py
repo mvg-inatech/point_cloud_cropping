@@ -13,7 +13,7 @@ from models.loss import get_loss_function
 from common.parser import get_params
 from engine import train_epoch, eval_epoch
 from common.parser import yaml_cfg_to_class
-from dataset.point_cloud_dataset import LargeScaleDataset
+from dataset.point_cloud_dataset import get_dataset
 from dataset.base_dataset import point_cloud_collate_fn
 
 
@@ -128,9 +128,9 @@ def main(args):
     )
     print("*" * 50)
 
-    dataset_train = LargeScaleDataset(dataset_config, split="train")
+    dataset_train = get_dataset(dataset_config, split="train")
     dataset_config.loops = 1  # evaluation only iterates over the dataset once
-    dataset_val = LargeScaleDataset(dataset_config, split="val")
+    dataset_val = get_dataset(dataset_config, split="val")
     dataloader_train = torch.utils.data.DataLoader(
         dataset_train,
         batch_size=config["train"]["bs"],

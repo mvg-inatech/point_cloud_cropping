@@ -109,7 +109,7 @@ class BaseDataset(torch.utils.data.Dataset):
 
     def create_features(self, data_dict):
         """
-        Create final feature vector for model.
+        Create final features for model.
         """
         for feat in self.feat_list:
             if feat not in data_dict.keys():

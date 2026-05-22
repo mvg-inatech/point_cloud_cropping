@@ -1,12 +1,22 @@
 import itertools
 import random
 from copy import deepcopy
+import numpy as np
 
 from dataset.sub_cloud_calc import calculate_sub_clouds_grid, calculate_sub_clouds
 from dataset.base_dataset import BaseDataset
 from dataset.utils import dict_from_idx
 
 from common.filter import get_sub_idx_function
+
+
+def get_dataset(dataset_config, split):
+    if dataset_config.dataset_type == "large_scale":
+        return LargeScaleDataset(dataset_config, split)
+    elif dataset_config.dataset_type == "splitted":
+        return SplittedDataset(dataset_config, split)
+    else:
+        raise ValueError("Unknown dataset type {}".format(dataset_config.dataset_type))
 
 
 class LambdaRange(object):
@@ -125,4 +135,39 @@ class LargeScaleDataset(BaseDataset):
         data_dict = self.discretize_coords(data_dict)
         data_dict = self.create_features(data_dict)
         data_dict["pos"] = sub_cloud.center.reshape(1, 3)
+        return data_dict
+
+
+class SplittedDataset(BaseDataset):
+    """
+    Dataset class for small point clouds or preprocessed ones (S3DIS room split for instance).
+    Requires much less memory since each cloud is loaded individually if needed.
+    """
+
+    def __init__(self, dataset_config, split):
+        super().__init__(dataset_config, split)
+        self.lambda_p = dataset_config.lambda_p
+        self.get_sub_idx = get_sub_idx_function(dataset_config.sub_cloud_method)
+
+    def crop(self, data_dict):
+        center = data_dict["coords"][np.random.randint(data_dict["coords"].shape[0])]
+        idx, probabilities = self.get_sub_idx(
+            data_dict["coords"],
+            self.lambda_p,
+            pos=center,
+        )
+        data_dict = dict_from_idx(data_dict, idx)
+        data_dict["coords"] -= center
+        data_dict["probabilities"] = probabilities[idx]
+        return data_dict
+
+    def __getitem__(self, idx):
+        idx_to_use = idx % len(self.file_paths)
+        data_dict = self.read_and_preprocess(idx_to_use)
+        data_dict = self.normalize_dict(data_dict)
+        if self.split == "train":
+            data_dict = self.crop(data_dict)
+            data_dict = self.transform(data_dict)
+        data_dict = self.discretize_coords(data_dict)
+        data_dict = self.create_features(data_dict)
         return data_dict

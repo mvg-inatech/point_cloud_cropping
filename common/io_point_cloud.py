@@ -2,7 +2,6 @@ import numpy as np
 from plyfile import PlyData
 import laspy
 
-
 ############################################################################
 # saving las stuff
 
@@ -51,9 +50,10 @@ def save_dict_to_laspy(data_dict: dict, output_path: str):
     - data_dict: A dictionary where keys are attribute names and values are numpy arrays of shape (N,).
     - output_path: The path to save the LAS file.
     """
+    data_dict_ = data_dict.copy()  # avoid destroying the original dictionary
     header = laspy.LasHeader(point_format=7)
 
-    pts = data_dict.pop("coords")
+    pts = data_dict_.pop("coords")
     xmin = np.floor(np.min(pts[:, 0]))
     ymin = np.floor(np.min(pts[:, 1]))
     zmin = np.floor(np.min(pts[:, 2]))
@@ -65,15 +65,15 @@ def save_dict_to_laspy(data_dict: dict, output_path: str):
     las.y = pts[:, 1]
     las.z = pts[:, 2]
 
-    if "colors" in data_dict:
-        colors = data_dict.pop("colors")
+    if "colors" in data_dict_:
+        colors = data_dict_.pop("colors")
         scale = 255.0 / np.max(colors)
         colors = (colors * scale).astype(np.uint8)
         las.red = colors[:, 0]
         las.green = colors[:, 1]
         las.blue = colors[:, 2]
 
-    for key, value in data_dict.items():
+    for key, value in data_dict_.items():
         if value.ndim != 1 or value.shape[0] != pts.shape[0]:
             raise ValueError(
                 f"Attribute {key} must be a 1D array with the same length as coords."

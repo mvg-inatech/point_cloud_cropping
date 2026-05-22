@@ -5,6 +5,7 @@ from numba import jit, prange
 #################################################################
 # sub cloud get method
 
+
 def get_sub_idx_function(sub_cloud_method):
     """Get the sub cloud filtering function based on the dataset configuration."""
 
@@ -20,10 +21,12 @@ def get_sub_idx_function(sub_cloud_method):
         get_sub_idx = filter_for_range_cylinder
     elif sub_cloud_method == "linear":
         get_sub_idx = filter_for_linear
+    elif sub_cloud_method == "max_pts":
+        get_sub_idx = filter_for_range_max_pts
     else:
         raise NotImplementedError(
             f"Sub cloud method {sub_cloud_method} not implemented. "
-            f"Please choose from [box, exponential, sphere, gaussian, cylinder]"
+            f"Please choose from [box, exponential, sphere, gaussian, cylinder, linear, max_pts]."
         )
     return get_sub_idx
 
@@ -268,6 +271,39 @@ def filter_for_linear(
     keep_mask = random_vals < probabilities  # Keep if random < drop_probability
     idx = np.argwhere(keep_mask).flatten()
 
+    return idx, probabilities
+
+
+def filter_for_range_max_pts(
+    pts: np.ndarray,
+    max_pts: int,
+    pos: np.ndarray = None,
+) -> np.ndarray:
+    """
+    Returns indicies of all points within given range relative to position,
+    if given or mean otherwise
+    Args:
+        pts (np.ndarray) : pointcloud points as a `np.array`
+        max_pts (int): maximum number of points to keep
+        pos (np.ndarray): position of scanner for instance
+    Returns:
+        - idx (np.ndarray): idx of points in defined range as a `np.array` [n]
+        - probabilities (np.ndarray): probabilities of points being kept as a `np.array` [n]
+    """
+    # 3D case
+    if pts.shape[1] < 3:
+        raise ValueError("Input points must have at least 3 dimensions (x, y, z).")
+
+    xyz = pts[:, :3]
+    if pos is not None:
+        mean = pos.reshape((3))
+    else:
+        mean = np.median(xyz, axis=0)
+
+    distance = np.linalg.norm(xyz - mean, axis=1)
+    idx = np.argsort(distance)[:max_pts]
+
+    probabilities = 1 - (distance / distance[idx[-1]])
     return idx, probabilities
 
 
