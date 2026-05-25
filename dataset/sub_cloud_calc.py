@@ -11,7 +11,6 @@ from common.filter import (
 )
 from common.voxelize import voxelize
 
-
 #################################################################
 # simple idx holding sub cloud class
 
@@ -77,7 +76,7 @@ def create_3d_grid_overlay(points, box_size):
 #################################################################
 # sub cloud calculation main function
 
-    
+
 def calculate_sub_clouds(
     pts,
     file_name,
@@ -161,6 +160,7 @@ def _process_single_center(
         pts[:, :3],
         selected_range,
         center,
+        use_numba=True,  # numba faster here... however not good for multiple workers...
     )
 
     if len(idx_pts) > min_pts:

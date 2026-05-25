@@ -97,6 +97,12 @@ class LargeScaleDataset(BaseDataset):
         return len(self.sub_clouds) * self.loops
 
     def init_sub_clouds(self):
+        if self.grid_overlay is not None:
+            print(
+                f"Calculating sub clouds with grid overlay of size {self.grid_overlay}..."
+            )
+        else:
+            print(f"Calculating sub clouds randomly without grid overlay...")
         self.clear_sub_clouds()
         for idx in range(len(self.file_paths)):
             self.init_single_cloud(idx)

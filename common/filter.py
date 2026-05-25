@@ -58,6 +58,7 @@ def filter_for_range_box(
     pts: np.ndarray,
     range_box: float,
     pos: np.ndarray = None,
+    use_numba=False,
 ) -> np.ndarray:
     """
     Returns indicies of all points within given range relative to position,
@@ -66,6 +67,7 @@ def filter_for_range_box(
         pts (np.ndarray) : pointcloud points as a `np.array` [n, 3]
         range_box (float): range in which points should be selected
         pos (np.ndarray): position of scanner for instance
+        use_numba (bool): whether to use numba for distance calculation
     Returns:
         - idx (np.ndarray): idx of points in defined range as a `np.array` [n]
         - dist (np.ndarray): distances of points from the position as a `np.array` [n]
@@ -97,7 +99,10 @@ def filter_for_range_box(
     filter = np.logical_and(filter, z_filt)
     idx = np.argwhere(filter).flatten()
 
-    dist = np.linalg.norm(xyz - mean, axis=1)
+    if use_numba:
+        dist = numba_fast_norm(mean, xyz[idx])
+    else:
+        dist = np.linalg.norm(xyz[idx] - mean, axis=1)
     probabilities = 1 - (dist / range_box)
 
     return idx, probabilities
@@ -107,6 +112,7 @@ def filter_for_range_sphere(
     pts: np.ndarray,
     range_sphere: float,
     pos: np.ndarray = None,
+    use_numba=False,
 ) -> np.ndarray:
     """
     Returns indicies of all points within given range relative to position,
@@ -115,6 +121,7 @@ def filter_for_range_sphere(
         pts (np.ndarray) : pointcloud points as a `np.array`
         range_sphere (float): range in which points should be selected
         pos (np.ndarray): position of scanner for instance
+        use_numba (bool): whether to use numba for distance calculation
     Returns:
         - idx (np.ndarray): idx of points in defined range as a `np.array` [n]
         - dist (np.ndarray): distances of points from the position as a `np.array` [n]
@@ -129,10 +136,13 @@ def filter_for_range_sphere(
     else:
         mean = np.median(xyz, axis=0)
 
-    dist = np.linalg.norm(xyz - mean, axis=1)
+    if use_numba:
+        dist = numba_fast_norm(mean, xyz)
+    else:
+        dist = np.linalg.norm(xyz - mean, axis=1)
     idx = np.argwhere(dist < range_sphere).flatten()
 
-    probabilities = 1 - (dist / range_sphere)
+    probabilities = 1 - (dist[idx] / range_sphere)
     return idx, probabilities
 
 
@@ -140,6 +150,7 @@ def filter_for_range_cylinder(
     pts: np.ndarray,
     range_cylinder: float,
     pos: np.ndarray = None,
+    use_numba=False,
 ) -> np.ndarray:
     """
     Returns indicies of all points within given cylinder range relative to position,
@@ -148,6 +159,7 @@ def filter_for_range_cylinder(
         pts (np.ndarray) : pointcloud points as a `np.array`
         range_cylinder (float): range in which points should be selected
         pos (np.ndarray): position of scanner for instance
+        use_numba (bool): whether to use numba for distance calculation
     Returns:
         - idx (np.ndarray): idx of points in defined range as a `np.array` [n]
         - dist (np.ndarray): distances of points from the position as a `np.array` [n]
@@ -161,11 +173,13 @@ def filter_for_range_cylinder(
     else:
         mean = np.median(xyz, axis=0)
 
-    dist = np.linalg.norm(xyz[:, :2] - mean[:2], axis=1)
+    if use_numba:
+        dist = numba_fast_norm(mean, xyz)
+    else:
+        dist = np.linalg.norm(xyz - mean, axis=1)
     idx = np.argwhere(dist < range_cylinder).flatten()
 
-    probabilities = 1 - (dist / range_cylinder)
-
+    probabilities = 1 - (dist[idx] / range_cylinder)
     return idx, probabilities
 
 
@@ -173,6 +187,7 @@ def filter_for_exponential(
     pts: np.ndarray,
     lambda_p: float,
     pos: np.ndarray = None,
+    use_numba=False,
 ) -> np.ndarray:
     """
     Returns indicies of all points within given range relative to position,
@@ -181,6 +196,7 @@ def filter_for_exponential(
         pts (np.ndarray) : pointcloud points as a `np.array`
         lambda_p (float): lambda parameter for exponential filtering
         pos (np.ndarray): position of scanner for instance
+        use_numba (bool): whether to use numba for distance calculation
     Returns:
         - idx (np.ndarray): idx of points in defined range as a `np.array` [n]
         - probabilities (np.ndarray): probabilities of points being kept as a `np.array` [n]
@@ -195,19 +211,23 @@ def filter_for_exponential(
     else:
         mean = np.median(xyz, axis=0)
 
-    distance = np.linalg.norm(xyz - mean, axis=1)
-    probabilities = np.exp(-lambda_p * distance)
+    if use_numba:
+        dist = numba_fast_norm(mean, xyz)
+    else:
+        dist = np.linalg.norm(xyz - mean, axis=1)
+    probabilities = np.exp(-lambda_p * dist)
     random_vals = np.random.random(len(probabilities))
     keep_mask = random_vals < probabilities  # Keep if random < drop_probability
     idx = np.argwhere(keep_mask).flatten()
 
-    return idx, probabilities
+    return idx, probabilities[idx]
 
 
 def filter_for_gaussian(
     pts: np.ndarray,
     std: float,
     pos: np.ndarray = None,
+    use_numba=False,
 ) -> np.ndarray:
     """
     Returns indicies of all points within given range relative to position,
@@ -216,6 +236,7 @@ def filter_for_gaussian(
         pts (np.ndarray) : pointcloud points as a `np.array`
         std (float): standard deviation for gaussian filtering
         pos (np.ndarray): position of scanner for instance
+        use_numba (bool): whether to use numba for distance calculation
     Returns:
         - idx (np.ndarray): idx of points in defined range as a `np.array` [n]
         - probabilities (np.ndarray): probabilities of points being kept as a `np.array` [n]
@@ -230,19 +251,23 @@ def filter_for_gaussian(
     else:
         mean = np.median(xyz, axis=0)
 
-    distance = np.linalg.norm(xyz - mean, axis=1)
-    probabilities = np.exp(-((distance / std) ** 2))
+    if use_numba:
+        dist = numba_fast_norm(mean, xyz)
+    else:
+        dist = np.linalg.norm(xyz - mean, axis=1)
+    probabilities = np.exp(-((dist / std) ** 2))
     random_vals = np.random.random(len(probabilities))
     keep_mask = random_vals < probabilities  # Keep if random < drop_probability
     idx = np.argwhere(keep_mask).flatten()
 
-    return idx, probabilities
+    return idx, probabilities[idx]
 
 
 def filter_for_linear(
     pts: np.ndarray,
     range_max: float,
     pos: np.ndarray = None,
+    use_numba=False,
 ) -> np.ndarray:
     """
     Returns indicies of all points within given range relative to position,
@@ -251,6 +276,7 @@ def filter_for_linear(
         pts (np.ndarray) : pointcloud points as a `np.array`
         range (float): max allowed range for linear filtering
         pos (np.ndarray): position of scanner for instance
+        use_numba (bool): whether to use numba for distance calculation
     Returns:
         - idx (np.ndarray): idx of points in defined range as a `np.array` [n]
         - probabilities (np.ndarray): probabilities of points being kept as a `np.array` [n]
@@ -265,19 +291,23 @@ def filter_for_linear(
     else:
         mean = np.median(xyz, axis=0)
 
-    distance = np.linalg.norm(xyz - mean, axis=1)
-    probabilities = (range_max - distance) / range_max
+    if use_numba:
+        dist = numba_fast_norm(mean, xyz)
+    else:
+        dist = np.linalg.norm(xyz - mean, axis=1)
+    probabilities = (range_max - dist) / range_max
     random_vals = np.random.random(len(probabilities))
     keep_mask = random_vals < probabilities  # Keep if random < drop_probability
     idx = np.argwhere(keep_mask).flatten()
 
-    return idx, probabilities
+    return idx, probabilities[idx]
 
 
 def filter_for_range_max_pts(
     pts: np.ndarray,
     max_pts: int,
     pos: np.ndarray = None,
+    use_numba=False,
 ) -> np.ndarray:
     """
     Returns indicies of all points within given range relative to position,
@@ -286,6 +316,7 @@ def filter_for_range_max_pts(
         pts (np.ndarray) : pointcloud points as a `np.array`
         max_pts (int): maximum number of points to keep
         pos (np.ndarray): position of scanner for instance
+        use_numba (bool): whether to use numba for distance calculation
     Returns:
         - idx (np.ndarray): idx of points in defined range as a `np.array` [n]
         - probabilities (np.ndarray): probabilities of points being kept as a `np.array` [n]
@@ -300,10 +331,13 @@ def filter_for_range_max_pts(
     else:
         mean = np.median(xyz, axis=0)
 
-    distance = np.linalg.norm(xyz - mean, axis=1)
-    idx = np.argsort(distance)[:max_pts]
+    if use_numba:
+        dist = numba_fast_norm(mean, xyz)
+    else:
+        dist = np.linalg.norm(xyz - mean, axis=1)
+    idx = np.argsort(dist)[:max_pts]
 
-    probabilities = 1 - (distance / distance[idx[-1]])
+    probabilities = 1 - (dist / dist[idx[-1]])
     return idx, probabilities
 
 

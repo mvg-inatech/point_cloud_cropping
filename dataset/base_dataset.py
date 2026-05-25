@@ -98,7 +98,7 @@ class BaseDataset(torch.utils.data.Dataset):
             data_dict = RandomPointFlip()(data_dict)
         if random.random() > 0.5:
             data_dict = GaussianPointNoise()(data_dict)
-        # feats
+        # color
         if random.random() > 0.5:
             data_dict = GaussianColorNoise()(data_dict)
         if random.random() > 0.5:
