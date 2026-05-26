@@ -135,11 +135,12 @@ class LargeScaleDataset(BaseDataset):
         data_dict = self.normalize_dict(data_dict)
         if self.split == "train":
             data_dict = self.transform(data_dict)
-        else:
-            data_dict["idx"] = sub_cloud.idx
-            data_dict["file_name"] = [sub_cloud.file_name]
+
         data_dict = self.discretize_coords(data_dict)
         data_dict = self.create_features(data_dict)
+        if self.split != "train":
+            data_dict["idx"] = sub_cloud.idx
+            data_dict["file_name"] = [sub_cloud.file_name]
         data_dict["pos"] = sub_cloud.center.reshape(1, 3)
         return data_dict
 
