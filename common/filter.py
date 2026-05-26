@@ -338,7 +338,7 @@ def filter_for_range_max_pts(
     idx = np.argsort(dist)[:max_pts]
 
     probabilities = 1 - (dist / dist[idx[-1]])
-    return idx, probabilities
+    return idx, probabilities[idx]
 
 
 #################################################################

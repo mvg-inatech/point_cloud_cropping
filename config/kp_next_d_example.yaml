@@ -2,6 +2,7 @@ name: kp_next
 dataset_name: paris_lille_3d
 save_dir: results/kp_next_sphere_12_paris_lille_3d
 dataset_config:
+  dataset_type: large_scale
   loops: 1
   voxel_size: 0.1 # match this with the MODEL voxel size!!!
   voxel_size_preprocessing: 0.05
@@ -75,11 +76,6 @@ model_config:
     - 20
     - 20
     - 20
-  dec_depths:
-    - 1
-    - 1
-    - 1
-    - 1
   dec_channels:
     - 96
     - 128

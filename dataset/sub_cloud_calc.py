@@ -93,7 +93,7 @@ def calculate_sub_clouds(
         # for exponential and gaussian its the probability of being kept
         idx_pts, probabilty = filter_method(
             pts[:, :3],
-            selected_range.get_lambda(),
+            selected_range,
             current_pos,
         )
         if len(idx_pts) > min_pts:
@@ -105,7 +105,7 @@ def calculate_sub_clouds(
         ]:
             potentials[idx_pts] += 1
         else:
-            potentials += probabilty
+            potentials[idx_pts] += probabilty
         choosen_idx = np.random.choice(np.where(potentials == np.min(potentials))[0])
         current_pos = pts[choosen_idx, :3]
     return sub_clouds

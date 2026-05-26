@@ -164,7 +164,7 @@ class SplittedDataset(BaseDataset):
         )
         data_dict = dict_from_idx(data_dict, idx)
         data_dict["coords"] -= center
-        data_dict["probabilities"] = probabilities[idx]
+        data_dict["probabilities"] = probabilities
         return data_dict
 
     def __getitem__(self, idx):
@@ -172,8 +172,13 @@ class SplittedDataset(BaseDataset):
         data_dict = self.read_and_preprocess(idx_to_use)
         data_dict = self.normalize_dict(data_dict)
         if self.split == "train":
-            data_dict = self.crop(data_dict)
             data_dict = self.transform(data_dict)
         data_dict = self.discretize_coords(data_dict)
         data_dict = self.create_features(data_dict)
+        if self.split == "train":
+            data_dict = self.crop(data_dict)
+        if self.split == "val":
+            center = np.mean(data_dict["coords"], axis=0)
+            data_dict["coords"] -= center
+            data_dict["pos"] = center.reshape(1, 3)
         return data_dict
