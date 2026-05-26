@@ -75,7 +75,7 @@ class BaseDataset(torch.utils.data.Dataset):
     def discretize_coords(self, data_dict):
         idx_unique, disc_coords = voxelize(data_dict["coords"], self.voxel_size)
         data_dict = dict_from_idx(data_dict, idx_unique)
-        data_dict["disc_coords"] = disc_coords.astype(np.float32)
+        data_dict["disc_coords"] = disc_coords.astype(np.int32)
         return data_dict
 
     def normalize_dict(self, data_dict):
