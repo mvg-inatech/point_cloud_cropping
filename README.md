@@ -6,7 +6,7 @@
 
 </div>
 
-Large-scale 3D point clouds can consist of billions of points. Even after downsampling, these point clouds are too large for modern 3D neural networks. In order to develop a semantic understanding of the scene, the point clouds are divided into smaller subclouds that can be processed. Typically, this division is done using spherical crops, resulting in a loss of surrounding geometric context. To address this issue, we propose alternative methods that produce subclouds with larger crop sizes while maintaining a similar number of points. Specifically, we compare exponential, Gaussian, and linear cropping methods with the spherical method. We evaluated two 3D deep learning model architectures using multiple indoor and outdoor environment datasets. Our results demonstrate that altering the cropping strategy can enhance model performance, especially for large-scale outdoor scenes, yielding new state-of-the-art results. The different crops (each with ~240k points) investigated in are shown in the following:
+Large-scale 3D point clouds can consist of hundreds of millions of points. Even after downsampling, these point clouds are too large for modern 3D neural networks. In order to develop a semantic understanding of the scene, the point clouds are divided into smaller subclouds that can be processed. Typically, this division is done using spherical crops, resulting in a loss of surrounding geometric context. To address this issue, we propose alternative methods that produce subclouds with larger crop sizes while maintaining a similar number of points. Specifically, we compare exponential, Gaussian, and linear cropping methods with the spherical method. We evaluated two 3D deep learning model architectures using multiple indoor and outdoor environment datasets. Our results demonstrate that altering the cropping strategy can enhance model performance, especially for large-scale outdoor scenes, yielding new state-of-the-art results. The different crops (each with ~240k points) investigated in are shown in the following:
 
 ![alt text](docs/crops.jpg "Title")
 
@@ -22,9 +22,14 @@ cd lib
 
 If you want to use [LitePT](https://github.com/prs-eth/LitePT) make sure to select the right GPU architecture. Have a [look](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/) and change accordingly in lib/pointrope/setup.py
 
-Train or run the models by using the main scripts:
+Train the models by using the main scripts:
 ```bash
 python3 train.py config/<filename.yaml>
+```
+
+Run the models by using the main scripts:
+```bash
+python3 infere.py <result_dir/> <data_input_dir> <data_output_dir>
 ```
 
 For linting and tests:
@@ -32,6 +37,16 @@ For linting and tests:
 pylint common tests
 pytest
 ```
+
+# Adapting
+
+## Dataset
+
+We tried to stick with .las and .ply files. Since the data uses different naming conventions, we use simple, specific loading methods defined within the configuration. These methods can easily be adapted to allow usage of other datasets.
+
+## Models
+
+Inspired by [Pointcept](https://github.com/Pointcept/Pointcept), we simply create a dictionary that is later stacked into a batch and used as the input for all the models. Some basic methods to convert this dictionary to Numpy, PyTorch or Spconv have already been implemented, along with some additional model architectures.  Adaptations should be straightforward.
 
 # Citation
 

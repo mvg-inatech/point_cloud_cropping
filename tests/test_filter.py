@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from types import SimpleNamespace
 
 from common.filter import (
     filter_for_exponential,
@@ -199,3 +200,42 @@ def test_filter_methods_require_three_dimensions():
 
     with pytest.raises(ValueError):
         filter_for_range_sphere(pts, range_sphere=1.0, pos=pos)
+
+
+def test_large_scale_dataset_idx_matches_voxelized_points():
+    from dataset.base_dataset import BaseDataset
+    from dataset.point_cloud_dataset import LargeScaleDataset
+
+    ds = object.__new__(LargeScaleDataset)
+    ds.voxel_size = 1.0
+    ds.split = "val"
+    ds.normalize_dict = lambda d: d
+    ds.transform = lambda d: d
+    ds.discretize_coords = BaseDataset.discretize_coords.__get__(ds, BaseDataset)
+    ds.create_features = lambda d: d
+    ds.full_data_dicts = {
+        "file.las": {
+            "coords": np.array(
+                [
+                    [0.0, 0.0, 0.0],
+                    [0.1, 0.0, 0.0],
+                    [1.0, 0.0, 0.0],
+                    [1.1, 0.0, 0.0],
+                ],
+                dtype=np.float32,
+            )
+        }
+    }
+    ds.sub_clouds = [
+        SimpleNamespace(
+            file_name="file.las",
+            idx=np.array([0, 1, 2, 3], dtype=np.int64),
+            center=np.zeros(3, dtype=np.float32),
+            probabilities=np.ones(4, dtype=np.float32),
+        )
+    ]
+
+    item = ds.__getitem__(0)
+
+    assert len(item["idx"]) == len(item["coords"])
+    assert np.array_equal(item["idx"], np.array([0, 2], dtype=np.int64))
